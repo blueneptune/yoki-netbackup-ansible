@@ -1,0 +1,48 @@
+[project]
+name = "yoki-netbackup-ansible"
+version = "0.1.0"
+description = "The yoki.netbackup Ansible collection: NetBackup modules on yoki-py-netbackup-sdk, and the roles that build primary and media servers."
+requires-python = ">=3.12"
+dependencies = [
+    "ansible-core>=2.18",
+    # The modules are built on the SDK (they run on the controller).
+    "netbackup-sdk",
+    "sdk-primer",
+]
+
+[dependency-groups]
+dev = [
+    "ansible-lint>=25.1",
+    "pytest>=8.4",
+    "respx>=0.22",
+    "ruff>=0.8",
+]
+
+[tool.uv]
+# A collection and playbooks, not a Python package.
+package = false
+
+[tool.uv.sources]
+sdk-primer = { git = "https://github.com/blueneptune/sdk-primer-core.git", tag = "v0.2.0" }
+# The sibling checkout while the SDK grows the calls this repo needs; a
+# released tag once they are in one:
+#   netbackup-sdk = { git = "https://github.com/blueneptune/yoki-py-netbackup-sdk.git", tag = "v0.3.0" }
+netbackup-sdk = { path = "../yoki-py-netbackup-sdk", editable = true }
+
+[tool.pytest.ini_options]
+testpaths = ["ansible_collections/yoki/netbackup/tests/unit"]
+# The repo root, so `ansible_collections.yoki.netbackup...` imports as it does under Ansible.
+pythonpath = ["."]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Ansible modules keep DOCUMENTATION / EXAMPLES / RETURN as long YAML strings first.
+"ansible_collections/yoki/netbackup/plugins/modules/*.py" = ["E501", "E402"]
+"ansible_collections/yoki/netbackup/plugins/doc_fragments/*.py" = ["E501"]
