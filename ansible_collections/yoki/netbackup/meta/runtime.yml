@@ -1,0 +1,10 @@
+---
+requires_ansible: ">=2.18.0"
+action_groups:
+  # module_defaults: {group/yoki.netbackup.nbu: {url: ..., api_key: ...}} sets the
+  # connection once for every module in a play.
+  nbu:
+    - nbu_info
+    - nbu_policy
+    - nbu_slp
+    - nbu_request

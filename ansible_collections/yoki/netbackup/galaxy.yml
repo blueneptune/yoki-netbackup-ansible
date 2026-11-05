@@ -1,0 +1,17 @@
+namespace: yoki
+name: netbackup
+version: 0.1.0
+readme: README.md
+authors:
+  - Michael Billings
+description: >-
+  NetBackup modules built on yoki-py-netbackup-sdk (policies, SLPs, inventory, any API call),
+  and roles that build and configure NetBackup primary and media servers.
+license:
+  - GPL-3.0-or-later
+tags: [netbackup, backup, veritas, cohesity]
+dependencies: {}
+repository: https://github.com/blueneptune/yoki-netbackup-ansible
+build_ignore:
+  - tests
+  - "*.tar.gz"
