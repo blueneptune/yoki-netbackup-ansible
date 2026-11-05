@@ -35,6 +35,7 @@ It replaces the single `Install-NetBackup` role in `gdpr_mgmt_tools/ansible`, wh
 
 | Module | Does | NetBackup calls (proven live?) |
 |---|---|---|
+| `yoki.netbackup.nbu_ca_cert` | The primary's CA certificate: downloaded, checked by fingerprint, then pinned like an SSH host key | `/security/cacert` (yes, read) |
 | `yoki.netbackup.nbu_info` | What the primary has: server, policies, SLPs, storage, hosts, retention levels | reads (yes) |
 | `yoki.netbackup.nbu_policy` | A policy: present with these attributes, schedules, clients and selections, or absent | `/config/policies` (yes, on 10.2) |
 | `yoki.netbackup.nbu_slp` | A storage lifecycle policy: present or absent | `/config/slps` (yes, on 10.2) |
@@ -50,6 +51,24 @@ machine running Ansible (the tools server), not on the NetBackup host. Use one o
 - `connection: local` / `hosts: localhost` on the play
 
 On any other host they fail with a message saying so.
+
+### The CA certificate
+
+The modules verify the primary against NetBackup's own CA (`ca_bundle`). `nbu_ca_cert`
+downloads it (`GET /security/cacert` needs no login), and `playbooks/info.yml` does this for you
+when no `-e nbu_ca_bundle=` is given:
+
+1. **First run:** it stops and lists the CA's SHA-256/SHA-1 fingerprints. The download itself
+   can't be verified (the CA is what's being fetched).
+2. **Compare them on the primary:** `/usr/openv/netbackup/bin/nbcertcmd -displayCACertDetail`.
+3. **Run again** with `-e nbu_ca_fingerprint=<SHA-256>`, or `-e nbu_ca_accept_new=true` only where
+   the path to the primary is trusted. The CA is written to `out/ca/<host>.pem` (git-ignored),
+   but only after it has been shown to verify the server's TLS.
+4. **From then on that file is the pin.** If the server's CA changes, the module stops; a renewal
+   is accepted by giving the new fingerprint.
+
+If it says the certificate does not verify the server because of the host name, use the name on
+the server's certificate (often the FQDN) as `nbu_primary`.
 
 ### Connection options (every module)
 

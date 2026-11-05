@@ -1,16 +1,34 @@
 ---
 # What a primary server has. Reads only.
-#   uv run ansible-playbook playbooks/info.yml -e nbu_primary=<host> [-e nbu_ca_bundle=<pem>]
-# with NBU_API_KEY in the environment (or api_key from a vault).
+#
+#   NBU_API_KEY=... uv run ansible-playbook playbooks/info.yml -e nbu_primary=<host>
+#
+# Without -e nbu_ca_bundle=<pem>, the primary's CA is downloaded to
+# out/ca/<host>.pem and pinned there. The first time, it stops and lists the
+# CA's fingerprints: compare them with `nbcertcmd -displayCACertDetail` on the
+# primary, then run again with -e nbu_ca_fingerprint=<the SHA-256 one>
+# (or -e nbu_ca_accept_new=true where the path to the primary is trusted).
 - name: Read a NetBackup primary server
   hosts: localhost
   connection: local
   gather_facts: false
+  vars:
+    nbu_api: "{{ nbu_url if nbu_url is defined else 'https://' ~ nbu_primary ~ ':1556/netbackup' }}"
+    nbu_ca_file: >-
+      {{ nbu_ca_bundle if nbu_ca_bundle is defined
+         else playbook_dir ~ '/../out/ca/' ~ (nbu_api | urlsplit('hostname')) ~ '.pem' }}
   module_defaults:
     group/yoki.netbackup.nbu:
-      url: "{{ nbu_url if nbu_url is defined else 'https://' ~ nbu_primary ~ ':1556/netbackup' }}"
-      ca_bundle: "{{ nbu_ca_bundle | default(omit) }}"
+      url: "{{ nbu_api }}"
+      ca_bundle: "{{ nbu_ca_file }}"
   tasks:
+    - name: The primary's CA certificate (checked by fingerprint, then pinned)
+      yoki.netbackup.nbu_ca_cert:  # noqa: args[module] (url comes from module_defaults)
+        dest: "{{ nbu_ca_file }}"
+        fingerprint: "{{ nbu_ca_fingerprint | default(omit) }}"
+        accept_new: "{{ nbu_ca_accept_new | default(false) | bool }}"
+      when: nbu_ca_bundle is not defined
+
     - name: Server, policies and SLPs
       yoki.netbackup.nbu_info:  # noqa: args[module] (url comes from module_defaults)
         gather_subset: [server, policies, slps]

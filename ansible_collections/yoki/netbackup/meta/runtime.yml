@@ -5,6 +5,7 @@ action_groups:
   # connection once for every module in a play.
   nbu:
     - nbu_info
+    - nbu_ca_cert
     - nbu_policy
     - nbu_slp
     - nbu_request
