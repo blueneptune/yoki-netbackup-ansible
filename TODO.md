@@ -4,10 +4,13 @@ Numbered so items can be referred to; struck through when done, with the commit.
 
 ## First run
 
-1. **Run the modules against a lab primary** (started 2026-11-05 on eth00bck01: `nbu_ca_cert`
-   reached it and stopped at first contact, as designed; next, the fingerprint check): `nbu_info`, then `nbu_policy` and `nbu_slp` on
-   their own `ansible-test-*` objects only, check mode first. Record what differed from the
-   SDK's recorded answers, and fix.
+1. **Run the modules against a lab primary.**
+   - Done 2026-11-05 on eth00bck01 (NetBackup 10.2), `playbooks/info.yml`:
+     - `nbu_ca_cert`: first contact stopped and listed the CA (`CN=nbatd`, valid to 2042); its
+       fingerprints matched `nbcertcmd -displayCACertDetail` on the primary; pinned on the rerun
+     - `nbu_info` (server, policies, SLPs) read through it, with the CA verified
+   - Next: `nbu_policy` and `nbu_slp` on their own `ansible-test-*` objects only, check mode
+     first. Record what differs from the SDK's recorded answers, and fix.
 2. ~~**This GitHub repo**: `git@github.com:blueneptune/yoki-netbackup-ansible.git`, created by hand
    (no `gh` here), then `git push -u origin main`.~~ Done 2026-11-05.
 3. **CI**: ruff, pytest and `ansible-lint` on every push, as in the SDK.
