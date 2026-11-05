@@ -16,7 +16,7 @@
     nbu_api: "{{ nbu_url if nbu_url is defined else 'https://' ~ nbu_primary ~ ':1556/netbackup' }}"
     nbu_ca_file: >-
       {{ nbu_ca_bundle if nbu_ca_bundle is defined
-         else playbook_dir ~ '/../out/ca/' ~ (nbu_api | urlsplit('hostname')) ~ '.pem' }}
+         else (playbook_dir | dirname) ~ '/out/ca/' ~ (nbu_api | urlsplit('hostname')) ~ '.pem' }}
   module_defaults:
     group/yoki.netbackup.nbu:
       url: "{{ nbu_api }}"
