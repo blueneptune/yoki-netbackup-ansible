@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.idea/
+*.retry
+
+# Collections installed from requirements.yml (ansible-galaxy), not ours.
+collections/
+
+# Secrets: the vault password, and any unencrypted vault file. Vault
+# files are committed only once encrypted (ansible-vault encrypt).
+.vault-pass
+*.vault.plain
+# NetBackup CA certificates and anything written out during a build.
+*.pem
+out/
