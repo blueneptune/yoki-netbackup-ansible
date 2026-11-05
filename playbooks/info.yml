@@ -1,0 +1,24 @@
+---
+# What a primary server has. Reads only.
+#   uv run ansible-playbook playbooks/info.yml -e nbu_primary=<host> [-e nbu_ca_bundle=<pem>]
+# with NBU_API_KEY in the environment (or api_key from a vault).
+- name: Read a NetBackup primary server
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  module_defaults:
+    group/yoki.netbackup.nbu:
+      url: "{{ nbu_url if nbu_url is defined else 'https://' ~ nbu_primary ~ ':1556/netbackup' }}"
+      ca_bundle: "{{ nbu_ca_bundle | default(omit) }}"
+  tasks:
+    - name: Server, policies and SLPs
+      yoki.netbackup.nbu_info:  # noqa: args[module] (url comes from module_defaults)
+        gather_subset: [server, policies, slps]
+      register: nbu
+
+    - name: Show them
+      ansible.builtin.debug:
+        msg:
+          server: "{{ nbu.netbackup.server }}"
+          policies: "{{ nbu.netbackup.policies | map(attribute='name') | list }}"
+          slps: "{{ nbu.netbackup.slps | map(attribute='slpName') | list }}"
